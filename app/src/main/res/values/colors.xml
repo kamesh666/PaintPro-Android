@@ -1,0 +1,7 @@
+<resources>
+    <!-- Same Google Material 3 token palette used in PaintPro-Web, so the two apps feel
+         like the same product. -->
+    <color name="paintpro_primary">#0B57D0</color>
+    <color name="paintpro_background">#F0F4F9</color>
+    <color name="paintpro_surface">#FFFFFF</color>
+</resources>

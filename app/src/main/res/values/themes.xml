@@ -1,0 +1,9 @@
+<resources>
+    <!-- Minimal platform theme used only for the window background before Compose takes
+         over (this app has no XML layouts / no com.google.android.material dependency). -->
+    <style name="Theme.PaintPro" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">@color/paintpro_background</item>
+        <item name="android:statusBarColor">@color/paintpro_primary</item>
+        <item name="android:navigationBarColor">@color/paintpro_surface</item>
+    </style>
+</resources>
