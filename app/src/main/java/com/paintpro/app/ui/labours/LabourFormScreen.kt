@@ -31,9 +31,8 @@ import com.paintpro.app.ui.common.PrimaryButton
 import com.paintpro.app.ui.common.rememberAppContainer
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import kotlinx.datetime.Clock
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.todayIn
+import java.time.Instant
+import java.time.LocalDate
 import java.util.UUID
 
 private val roles = listOf("Painter", "Helper", "Supervisor", "Master Painter", "Polisher", "Spray Specialist")
@@ -49,7 +48,7 @@ fun LabourFormScreen(labourId: String?, onDone: () -> Unit) {
     var role by remember { mutableStateOf(roles.first()) }
     var dailyWage by remember { mutableStateOf("") }
     var isActive by remember { mutableStateOf(true) }
-    var joinedDate by remember { mutableStateOf(Clock.System.todayIn(TimeZone.currentSystemDefault()).toString()) }
+    var joinedDate by remember { mutableStateOf(LocalDate.now().toString()) }
     var notes by remember { mutableStateOf("") }
     var error by remember { mutableStateOf<String?>(null) }
     var saving by remember { mutableStateOf(false) }
@@ -135,7 +134,7 @@ fun LabourFormScreen(labourId: String?, onDone: () -> Unit) {
                     saving = true
                     scope.launch {
                         val orgId = container.profileRepository.getProfileOnce()?.orgId ?: userId
-                        val now = Clock.System.now().toString()
+                        val now = Instant.now().toString()
                         val entity = LabourEntity(
                             id = existing?.id ?: UUID.randomUUID().toString(),
                             userId = userId,

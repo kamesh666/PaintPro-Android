@@ -32,9 +32,8 @@ import com.paintpro.app.ui.common.PrimaryButton
 import com.paintpro.app.ui.common.rememberAppContainer
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import kotlinx.datetime.Clock
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.todayIn
+import java.time.Instant
+import java.time.LocalDate
 import java.util.UUID
 
 private val siteTypes = listOf("Contract", "Labour-Based")
@@ -52,7 +51,7 @@ fun SiteFormScreen(siteId: String?, onDone: () -> Unit) {
     var siteType by remember { mutableStateOf(siteTypes.first()) }
     var clientRatePerShift by remember { mutableStateOf("") }
     var totalBudget by remember { mutableStateOf("") }
-    var startDate by remember { mutableStateOf(Clock.System.todayIn(TimeZone.currentSystemDefault()).toString()) }
+    var startDate by remember { mutableStateOf(LocalDate.now().toString()) }
     var endDate by remember { mutableStateOf("") }
     var status by remember { mutableStateOf(statuses.first()) }
     var notes by remember { mutableStateOf("") }
@@ -157,7 +156,7 @@ fun SiteFormScreen(siteId: String?, onDone: () -> Unit) {
                     saving = true
                     scope.launch {
                         val orgId = container.profileRepository.getProfileOnce()?.orgId ?: userId
-                        val now = Clock.System.now().toString()
+                        val now = Instant.now().toString()
                         val entity = SiteEntity(
                             id = existing?.id ?: UUID.randomUUID().toString(),
                             userId = userId,

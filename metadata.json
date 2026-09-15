@@ -1,0 +1,8 @@
+{
+  "name": "PaintPro",
+  "description": "Painting contractor management app for tracking sites, labours, attendance, and finances with Supabase sync.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

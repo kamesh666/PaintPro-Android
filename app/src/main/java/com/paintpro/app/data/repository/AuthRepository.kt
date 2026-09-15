@@ -14,7 +14,7 @@ import io.github.jan.supabase.postgrest.postgrest
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.withContext
-import kotlinx.datetime.Clock
+import java.time.Instant
 
 /**
  * Wraps Supabase Auth (email/password) plus the "profile bootstrap" step PaintPro-Web also does
@@ -23,7 +23,7 @@ import kotlinx.datetime.Clock
  */
 class AuthRepository(private val context: Context) {
     private val client get() = SupabaseProvider.getClient(context)
-    private val db get() = AppDatabase.getInstance(context)
+    private val db get() = AppDatabase.getInstance(context).profileDao()
 
     /** Mirrors Supabase's own auth state - Initializing / NotAuthenticated / Authenticated / RefreshFailure. */
     val sessionStatus: StateFlow<SessionStatus> get() = client.auth.sessionStatus
@@ -54,7 +54,7 @@ class AuthRepository(private val context: Context) {
                     "Confirm the email, then sign in.",
             )
 
-            val now = Clock.System.now().toString()
+            val now = Instant.now().toString()
             val profile = ProfileEntity(
                 id = userInfo.id,
                 fullName = fullName,
@@ -65,8 +65,13 @@ class AuthRepository(private val context: Context) {
                 currency = "₹",
                 createdAt = now,
             )
-            db.profileDao().upsert(profile)
-            runCatching { client.postgrest.from("profiles").upsert(profile.toDto()) }
+            AppDatabase.getInstance(context).profileDao().upsert(profile)
+            try {
+                client.postgrest.from("profiles").upsert(profile.toDto())
+            } catch (_: Exception) {
+                // Best-effort remote sync
+            }
+            Unit
         }
     }
 
@@ -80,18 +85,21 @@ class AuthRepository(private val context: Context) {
                 ?: error("Sign-in succeeded but no session was returned - please try again.")
 
             // Pull the profile down so a fresh device / reinstall has it locally too.
-            runCatching {
+            try {
                 val dto = client.postgrest.from("profiles")
                     .select { filter { eq("id", userId) } }
                     .decodeSingle<ProfileDto>()
-                db.profileDao().upsert(dto.toEntity())
+                AppDatabase.getInstance(context).profileDao().upsert(dto.toEntity())
+            } catch (_: Exception) {
+                // Best-effort profile fetch
             }
+            Unit
         }
     }
 
     suspend fun signOut() = withContext(Dispatchers.IO) {
         runCatching { client.auth.signOut() }
         // Single-profile-per-device model: wipe local data, the next sign-in re-syncs it.
-        db.clearAllTables()
+        AppDatabase.getInstance(context).clearAllTables()
     }
 }

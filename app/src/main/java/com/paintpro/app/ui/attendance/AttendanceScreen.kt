@@ -36,12 +36,8 @@ import com.paintpro.app.data.local.entity.LabourEntity
 import com.paintpro.app.ui.common.rememberAppContainer
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.launch
-import kotlinx.datetime.Clock
-import kotlinx.datetime.DatePeriod
-import kotlinx.datetime.LocalDate
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.plus
-import kotlinx.datetime.todayIn
+import java.time.Instant
+import java.time.LocalDate
 import java.util.UUID
 
 private val shiftOptions = listOf(0.5, 1.0, 1.5, 2.0)
@@ -55,7 +51,7 @@ fun AttendanceScreen(onBack: () -> Unit) {
     val orgId = profile?.orgId
     val currency = profile?.currency ?: "₹"
 
-    var date by remember { mutableStateOf(Clock.System.todayIn(TimeZone.currentSystemDefault()).toString()) }
+    var date by remember { mutableStateOf(LocalDate.now().toString()) }
     var selectedSiteId by remember { mutableStateOf<String?>(null) }
 
     val laboursFlow = remember(orgId) { orgId?.let { container.labourRepository.observeActiveLabours(it) } ?: emptyFlow() }
@@ -144,7 +140,7 @@ fun AttendanceScreen(onBack: () -> Unit) {
                                     if (shift == null) {
                                         current?.let { container.attendanceRepository.deleteAttendance(it.id) }
                                     } else {
-                                        val now = Clock.System.now().toString()
+                                        val now = Instant.now().toString()
                                         val entity = AttendanceEntity(
                                             id = current?.id ?: UUID.randomUUID().toString(),
                                             userId = userId,
@@ -208,7 +204,7 @@ private fun AttendanceRow(
 }
 
 private fun shiftDate(date: String, days: Int): String = try {
-    LocalDate.parse(date).plus(DatePeriod(days = days)).toString()
+    LocalDate.parse(date).plusDays(days.toLong()).toString()
 } catch (e: Exception) {
     date
 }
